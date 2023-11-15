@@ -5,7 +5,11 @@ async fn main() {
     run().await;
 }
 
-use three_d::*;
+use three_d::{
+    self, AmbientLight, Camera, ClearState, CpuMesh, FrameOutput, Gm, Mesh, OrbitControl,
+    PhysicalMaterial, Skybox, Window, WindowSettings,
+};
+use three_d_asset::{degrees, vec3, PbrMaterial, Srgba, TriMesh, Viewport};
 
 pub async fn run() {
     let window = Window::new(WindowSettings {
@@ -50,7 +54,7 @@ pub async fn run() {
         Mesh::new(&context, &CpuMesh::sphere(32)),
         PhysicalMaterial::new_opaque(
             &context,
-            &CpuMaterial {
+            &PbrMaterial {
                 roughness: 0.2,
                 metallic: 0.8,
                 ..Default::default()
@@ -71,7 +75,7 @@ pub async fn run() {
             |gui_context| {
                 use three_d::egui::*;
                 SidePanel::left("side_panel").show(gui_context, |ui| {
-                    ui.heading("Debug Panel");
+                    ui.heading("Config Panel");
                     ui.add(Slider::new(&mut model.material.metallic, 0.0..=1.0).text("Metallic"));
                     ui.add(Slider::new(&mut model.material.roughness, 0.0..=1.0).text("Roughness"));
                     ui.color_edit_button_rgba_unmultiplied(&mut color);
