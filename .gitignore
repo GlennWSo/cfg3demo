@@ -2,8 +2,8 @@
 .direnv/
 pkg/
 crap/
+assets/
 
 
 # Added by cargo
-
 /target
