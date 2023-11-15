@@ -15,7 +15,9 @@
           inherit system overlays;
         };
 
-        rust = pkgs.rust-bin.stable.latest.default;
+        rust = pkgs.rust-bin.stable.latest.default.override{
+          targets = ["wasm32-unknown-unknown"];
+        };
         
         graphicLibs = with pkgs; lib.makeLibraryPath [
           libGL
@@ -27,6 +29,10 @@
 
         bacon = pkgs.bacon;
 
+        web_run = pkgs.writeScriptBin "run" ./run.fish;
+        browse = pkgs.writeScriptBin "browse" "firefox --private-window http://127.0.0.1:8000/";
+
+        
         bacon_script = pkgs.writeScriptBin "bac" ''
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${graphicLibs}
           ${bacon}/bin/bacon "$@"
@@ -44,6 +50,9 @@
           cargo_script
           bacon_script
           rust
+          # nodejs_20
+          wasm-pack
+          wasm-bindgen-cli
         ];
 
         utils = with pkgs; [
@@ -54,6 +63,9 @@
           gdb
           lldb
           rust-analyzer
+          python311
+          web_run
+          browse
         ];
       in
       with pkgs;
