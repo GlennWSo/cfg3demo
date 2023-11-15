@@ -1,6 +1,7 @@
 .devenv/
 .direnv/
 pkg/
+crap/
 
 
 # Added by cargo
