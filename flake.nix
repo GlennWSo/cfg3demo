@@ -1,58 +1,72 @@
-
 {
-  inputs =  {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  description = "A devShell that can run three-d examples";
+
+  inputs = {
+    nixpkgs.url      = "github:NixOS/nixpkgs/nixos-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
-    systems.url = "github:nix-systems/default";
-    devenv.url = "github:cachix/devenv/v0.6.3";
+    flake-utils.url  = "github:numtide/flake-utils";
   };
 
-  nixConfig = {
-    extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
-    extra-substituters = "https://devenv.cachix.org";
-  };
-
-  outputs = { self, nixpkgs, rust-overlay, devenv, systems } @ inputs:
-  let 
-    forEachSystem = nixpkgs.lib.genAttrs (import systems);
-
-  in
-  {
-    devShells = forEachSystem(system:
-      let 
+  outputs = { self, nixpkgs, rust-overlay, flake-utils}:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
         overlays = [ (import rust-overlay) ];
         pkgs = import nixpkgs {
           inherit system overlays;
         };
+
         rust = pkgs.rust-bin.stable.latest.default;
-        tools = with pkgs; [
-          vscode-langservers-extracted
+        
+        graphicLibs = with pkgs; lib.makeLibraryPath [
+          libGL
+          xorg.libX11
+          xorg.libXcursor
+          xorg.libXi
+          xorg.libXrandr
+         ];    
+
+        bacon = pkgs.bacon;
+
+        bacon_script = pkgs.writeScriptBin "bac" ''
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${graphicLibs}
+          ${bacon}/bin/bacon "$@"
+        '';
+        
+        cargo_script = pkgs.writeScriptBin "car" ''
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${graphicLibs}
+          export PATH=$PATH:${rust}/bin
+          ${rust}/bin/cargo "$@"
+        '';
+
+        buildDeps = with pkgs; [
+          openssl
+          pkg-config
+          cargo_script
+          bacon_script
           rust
-          bacon
+        ];
+
+        utils = with pkgs; [
+          #  video driver info
+          pciutils 
+          glxinfo
+          nil
+          gdb
+          lldb
           rust-analyzer
-          sqlitebrowser
-          git-graph
-          cargo-watch
         ];
       in
-        { default = devenv.lib.mkShell {
-          inherit inputs pkgs;
-          modules = [
-            {
-              packages = tools;
-              env  = with pkgs; {
-                OPENSSL_DIR = "${openssl.dev}";
-                OPENSSL_LIB_DIR = "${openssl.out}/lib";
-              };
-              processes.app-serve.exec = "cargo watch -x 'run'";
-            }
-          ];
+      with pkgs;
+      {
+        devShells.default = mkShell {
+          name = "rust graphics env"; 
+          buildInputs = buildDeps ++ utils;
+          shellHook = ''
+            echo Entering rust env!
+            echo 'use "car" or "bac" to run cargo or bacon with: LD_LIBRARY_PATH='
+            echo "    ${graphicLibs}" | sed 's/:/\n    /g'
+          '';
         };
       }
     );
-  };
 }
-
-
-
-        
