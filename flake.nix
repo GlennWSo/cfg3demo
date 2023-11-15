@@ -24,7 +24,7 @@
         pkgs = import nixpkgs {
           inherit system overlays;
         };
-        rust = pkgs.rust-bin.nightly.latest.default;
+        rust = pkgs.rust-bin.stable.latest.default;
         tools = with pkgs; [
           vscode-langservers-extracted
           rust
