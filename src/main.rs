@@ -6,6 +6,9 @@ async fn main() {
 }
 
 #[cfg(target_arch = "wasm32")]
-fn main() {
-    panic!("running wasm32 target as binary")
+#[tokio::main(flavor = "current_thread")]
+async fn main() {
+    use cfg3demo::start;
+    println!("hello");
+    start().await;
 }

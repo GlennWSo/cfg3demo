@@ -6,9 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-crate-type = ["cdylib"]
+name = "cfg3demo"
+crate-type = ["cdylib", "lib"]
 
 [dependencies]
+reqwest = "0.11.22"
 three-d = { version = "0.16.3", features = ["egui-gui"] }
 three-d-asset = { version = "0.6.0", features = ["hdr", "http"] }
 
@@ -16,7 +18,9 @@ three-d-asset = { version = "0.6.0", features = ["hdr", "http"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+tokio = { features = ["macros", "rt", "sync"] }
 log = "0.4"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"

@@ -3,7 +3,9 @@ use three_d::{
     AmbientLight, Camera, ClearState, CpuMesh, FrameOutput, Gm, Mesh, OrbitControl,
     PhysicalMaterial, Skybox, Window, WindowSettings,
 };
-use three_d_asset::{degrees, vec3, PbrMaterial, Srgba, TriMesh, Viewport};
+use three_d_asset::{degrees, vec3, PbrMaterial, Srgba, Viewport};
+
+use three_d::egui::{self, Slider};
 
 pub async fn run() {
     let window = Window::new(WindowSettings {
@@ -66,8 +68,7 @@ pub async fn run() {
             frame_input.viewport,
             frame_input.device_pixel_ratio,
             |gui_context| {
-                use three_d::egui::*;
-                SidePanel::left("side_panel").show(gui_context, |ui| {
+                egui::SidePanel::left("side_panel").show(gui_context, |ui| {
                     ui.heading("Config Panel");
                     ui.add(Slider::new(&mut model.material.metallic, 0.0..=1.0).text("Metallic"));
                     ui.add(Slider::new(&mut model.material.roughness, 0.0..=1.0).text("Roughness"));

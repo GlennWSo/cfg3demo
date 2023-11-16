@@ -64,6 +64,7 @@
           lldb
           rust-analyzer
           python311
+          trunk
           web_run
           browse
         ];

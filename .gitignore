@@ -3,6 +3,7 @@
 pkg/
 crap/
 assets/
+dist/
 
 
 # Added by cargo
