@@ -1,11 +1,36 @@
+use std::fmt::Display;
+
 // use three_d::egui::Slider;
 use three_d::{
-    AmbientLight, Camera, ClearState, CpuMesh, FrameOutput, Gm, Mesh, OrbitControl,
-    PhysicalMaterial, Skybox, Window, WindowSettings,
+    egui::WidgetText, AmbientLight, Camera, ClearState, CpuMesh, FrameOutput, Gm, Mesh,
+    OrbitControl, PhysicalMaterial, Skybox, Window, WindowSettings,
 };
 use three_d_asset::{degrees, vec3, PbrMaterial, Srgba, Viewport};
 
 use three_d::egui::{self, Slider};
+
+#[derive(PartialEq)]
+enum Material1 {
+    GreySteel,
+    GlossyBlack,
+    MatePink,
+}
+impl Display for Material1 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Material1::GreySteel => write!(f, "Grey"),
+            Material1::GlossyBlack => write!(f, "Black"),
+            Material1::MatePink => write!(f, "Pink"),
+        }
+    }
+}
+
+impl From<Material1> for WidgetText {
+    fn from(value: Material1) -> Self {
+        let s = value.to_string();
+        Self::from(s)
+    }
+}
 
 pub async fn run() {
     let window = Window::new(WindowSettings {
@@ -58,8 +83,9 @@ pub async fn run() {
     );
     let mut gui = three_d::GUI::new(&context);
 
-    // main loop
     let mut color = [1.0; 4];
+    let mut m1 = Material1::GreySteel;
+    // main loop
     window.render_loop(move |mut frame_input| {
         let mut panel_width = 0.0;
         gui.update(
@@ -70,6 +96,13 @@ pub async fn run() {
             |gui_context| {
                 egui::SidePanel::left("side_panel").show(gui_context, |ui| {
                     ui.heading("Config Panel");
+                    ui.horizontal(|ui| {
+                        ui.label("Material1:");
+                        use Material1 as M1;
+                        ui.radio_value(&mut m1, M1::GreySteel, M1::GreySteel);
+                        ui.radio_value(&mut m1, M1::GlossyBlack, M1::GlossyBlack);
+                        ui.radio_value(&mut m1, M1::MatePink, M1::MatePink);
+                    });
                     ui.add(Slider::new(&mut model.material.metallic, 0.0..=1.0).text("Metallic"));
                     ui.add(Slider::new(&mut model.material.roughness, 0.0..=1.0).text("Roughness"));
                     ui.color_edit_button_rgba_unmultiplied(&mut color);
