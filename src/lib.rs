@@ -1,7 +1,6 @@
-#![allow(special_module_name)]
-mod main;
+mod gmain;
 
-// Entry point for wasm
+// Entry for wasm
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
@@ -14,6 +13,6 @@ pub async fn start() -> Result<(), JsValue> {
     info!("Logging works!");
 
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
-    main::run().await;
+    gmain::run().await;
     Ok(())
 }
