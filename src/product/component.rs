@@ -1,10 +1,14 @@
 use log::warn;
-use std::fmt::Display;
+use std::{
+    fmt::Display,
+    iter::Map,
+    option::{self, IntoIter},
+};
 use three_d::{
     egui::{Color32, ProgressBar, Sense, Stroke, Ui},
-    Context, Gm, Mesh, PhysicalMaterial,
+    Context, Geometry, Gm, Mesh, Object, PhysicalMaterial,
 };
-use three_d_asset::{PbrMaterial, TriMesh};
+use three_d_asset::{PbrMaterial, Srgba, TriMesh};
 
 pub struct Material {
     name: Box<str>,
@@ -114,28 +118,34 @@ impl Component {
         }
     }
 
-    pub fn model(&self) -> &PbrModel {
-        self.model.as_ref().expect("model has not been initated")
+    pub fn model(&self) -> Option<&dyn Object> {
+        if self.opt_in {
+            Some(self.model.as_ref().expect("model has not been initated"))
+        } else {
+            None
+        }
     }
 }
 
 impl Component {
     pub fn add_controls(&mut self, ui: &mut Ui) {
-        ui.group(|ui| {
-            self.show_toggle(ui);
-            self.material_picker(ui);
-            let (response, painter) = ui.allocate_painter([30., 30.].into(), Sense::hover());
-            let rounding = 0.;
-            let stroke: Stroke = (5.0, Color32::LIGHT_GRAY).into();
-            painter.rect(response.rect, rounding, self.material().color32(), stroke);
-            ui.horizontal(|ui| {
-                ui.label("Metallic:");
-                ui.add(ProgressBar::new(self.material().metallic))
-            });
-            ui.horizontal(|ui| {
-                ui.label("Roughness:");
-                ui.add(ProgressBar::new(self.material().roughness));
-            });
+        self.show_toggle(ui);
+        ui.add_enabled_ui(self.opt_in, |ui: &mut Ui| {
+            ui.group(|ui| {
+                self.material_picker(ui);
+                let (response, painter) = ui.allocate_painter([30., 30.].into(), Sense::hover());
+                let rounding = 0.;
+                let stroke: Stroke = (5.0, Color32::LIGHT_GRAY).into();
+                painter.rect(response.rect, rounding, self.material().color32(), stroke);
+                ui.horizontal(|ui| {
+                    ui.label("Metallic:");
+                    ui.add(ProgressBar::new(self.material().metallic))
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Roughness:");
+                    ui.add(ProgressBar::new(self.material().roughness));
+                });
+            })
         });
     }
     fn material_picker(&mut self, ui: &mut Ui) {
@@ -147,3 +157,13 @@ impl Component {
         ui.checkbox(&mut self.opt_in, self.name.as_ref());
     }
 }
+
+// impl<'a> IntoIterator for &'a Component {
+//     type Item = &'a dyn Object;
+
+//     type IntoIter = IntoIter<Self::Item>;
+
+//     fn into_iter(self) -> Self::IntoIter {
+//         self.model.into_iter().map(|e| e.into())
+//     }
+// }

@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, iter};
 
 // use three_d::egui::Slider;
 use three_d::{
@@ -66,6 +66,7 @@ pub async fn render(part: Component) {
             |gui_context| {
                 SidePanel::left("side_panel").show(gui_context, |ui| {
                     ui.heading("Config Panel");
+                    ui.add_space(30.0);
                     // ui.horizontal();
                     part.add_controls(ui);
                 });
@@ -73,9 +74,6 @@ pub async fn render(part: Component) {
             },
         );
         part.update();
-        // model.material.albedo = Srgba::from(part.material().rgb());
-        // model.material.metallic = part.material().metallic;
-        // model.material.roughness = part.material().roughness;
 
         let viewport = Viewport {
             x: (panel_width * frame_input.device_pixel_ratio) as i32,
@@ -87,10 +85,11 @@ pub async fn render(part: Component) {
         camera.set_viewport(viewport);
         control.handle_events(&mut camera, &mut frame_input.events);
 
+        let objects = skybox.into_iter().chain(part.model());
         frame_input
             .screen()
             .clear(ClearState::color_and_depth(0.5, 0.5, 0.5, 1.0, 1.0))
-            .render(&camera, skybox.into_iter().chain(part.model()), &[&light])
+            .render(&camera, objects, &[&light])
             .write(|| gui.render());
 
         FrameOutput::default()
