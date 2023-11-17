@@ -1,3 +1,4 @@
+mod product;
 mod render;
 
 use log::{error, info};
@@ -9,7 +10,7 @@ use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen(start)]
 pub async fn start() -> Result<(), JsValue> {
-    use render::Component;
+    use product::Component;
 
     console_log::init_with_level(log::Level::Debug).unwrap();
 
