@@ -23,13 +23,8 @@ impl<'a> Product {
     }
 
     pub fn placeholder() -> Self {
-        let parts = [
-            Component::placeholder(),
-            Component::placeholder(),
-            Component::placeholder(),
-        ]
-        .into();
-        Self::new("The Chair (tm)", parts)
+        let parts = [Component::placeholder1(), Component::placeholder2()].into();
+        Self::new("Chair (tm)", parts)
     }
 
     pub fn objects(&'a self) -> impl Iterator<Item = &'a (dyn three_d::Object + 'a)> {

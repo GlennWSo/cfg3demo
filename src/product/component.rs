@@ -1,12 +1,10 @@
 use log::warn;
-use std::{
-    fmt::Display,
-};
+use std::fmt::Display;
 use three_d::{
     egui::{Color32, InnerResponse, ProgressBar, Sense, Stroke, Ui},
     Context, Gm, Mesh, Object, PhysicalMaterial,
 };
-use three_d_asset::{PbrMaterial, TriMesh};
+use three_d_asset::{PbrMaterial, Positions, TriMesh, Vector3};
 
 pub struct Material {
     name: Box<str>,
@@ -78,9 +76,9 @@ impl Component {
         }
     }
 
-    pub fn placeholder() -> Self {
+    pub fn placeholder1() -> Self {
         Self {
-            name: "Dummy".into(),
+            name: "Sphere".into(),
             shape: TriMesh::sphere(32),
             current_material: 0,
             materials: placeholder_materials(),
@@ -88,6 +86,26 @@ impl Component {
             opt_in: true,
             model: None,
         }
+    }
+    pub fn placeholder2() -> Self {
+        let mut shape = TriMesh::cube();
+        let pos = match shape.positions {
+            Positions::F32(mut v) => Positions::F32({
+                for e in v.iter_mut() {
+                    e.y -= 2.;
+                }
+                v
+            }),
+            Positions::F64(mut v) => Positions::F64({
+                for e in v.iter_mut() {
+                    e.z -= 10.;
+                }
+                v
+            }),
+        };
+
+        shape.positions = pos;
+        Self::new("Cube".into(), shape, placeholder_materials(), false)
     }
     pub fn material(&self) -> &Material {
         &self.materials[self.current_material]
