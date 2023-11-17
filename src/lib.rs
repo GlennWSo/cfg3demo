@@ -22,7 +22,7 @@ pub async fn start() -> Result<(), JsValue> {
         .send()
         .await;
 
-    let part = match res {
+    let product = match res {
         Ok(v) => {
             info!("got resonse: {:#?}", v);
             error! {"Failed to parse api response"}; // TODO parse
@@ -38,6 +38,6 @@ pub async fn start() -> Result<(), JsValue> {
 
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
-    render::render(part).await;
+    render::render(product).await;
     Ok(())
 }
