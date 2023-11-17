@@ -1,16 +1,10 @@
-use std::{fmt::Display, iter};
-
-// use three_d::egui::Slider;
 use three_d::{
-    egui::{Sense, SidePanel},
-    AmbientLight, Camera, ClearState, FrameOutput, Gm, Mesh, OrbitControl, PhysicalMaterial,
-    Skybox, Window, WindowSettings,
+    egui::SidePanel, AmbientLight, Camera, ClearState, FrameOutput, OrbitControl, Skybox, Window,
+    WindowSettings,
 };
-use three_d_asset::{degrees, vec3, PbrMaterial, Srgba, TriMesh, Viewport};
+use three_d_asset::{degrees, vec3, Srgba, Viewport};
 
-use three_d::egui::{Color32, ProgressBar, Ui};
-
-use crate::product::{Component, Product};
+use crate::product::Product;
 
 pub async fn render(mut product: Product) {
     let window = Window::new(WindowSettings {
@@ -66,8 +60,6 @@ pub async fn render(mut product: Product) {
             frame_input.device_pixel_ratio,
             |gui_context| {
                 SidePanel::left("side_panel").show(gui_context, |ui| {
-                    ui.heading("Config Panel");
-                    ui.add_space(30.0);
                     product.add_controls(ui);
                 });
                 panel_width = gui_context.used_rect().width();
