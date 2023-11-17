@@ -51,21 +51,10 @@ pub async fn render(part: Component) {
     let light = AmbientLight::new_with_environment(&context, 1.0, Srgba::WHITE, skybox.texture());
 
     let mut part = Component::placeholder();
+    part.init(&context);
 
-    let mut model = Gm::new(
-        Mesh::new(&context, &TriMesh::sphere(32)),
-        PhysicalMaterial::new_opaque(
-            &context,
-            &PbrMaterial {
-                roughness: 0.2,
-                metallic: 0.8,
-                ..Default::default()
-            },
-        ),
-    );
     let mut gui = three_d::GUI::new(&context);
 
-    let mut color: [u8; 3] = part.material().rgb;
     // main loop
     window.render_loop(move |mut frame_input| {
         let mut panel_width = 0.0;
@@ -78,26 +67,15 @@ pub async fn render(part: Component) {
                 SidePanel::left("side_panel").show(gui_context, |ui| {
                     ui.heading("Config Panel");
                     // ui.horizontal();
-                    part.material_picker(ui, &mut color);
-                    ui.horizontal(|ui| {
-                        ui.label("Metallic:");
-                        ui.add(ProgressBar::new(part.material().metallic))
-                    });
-                    ui.horizontal(|ui| {
-                        ui.label("Roughness:");
-                        ui.add(ProgressBar::new(part.material().roughness));
-                    });
-                    let color = Color32::from_rgb(color[0], color[1], color[2]);
-                    let (response, painter) =
-                        ui.allocate_painter([30., 30.].into(), Sense::hover());
-                    painter.rect(response.rect, 10., color, (5.0, Color32::LIGHT_GRAY));
+                    part.add_controls(ui);
                 });
                 panel_width = gui_context.used_rect().width();
             },
         );
-        model.material.albedo = Srgba::from(part.material().rgb);
-        model.material.metallic = part.material().metallic;
-        model.material.roughness = part.material().roughness;
+        part.update();
+        // model.material.albedo = Srgba::from(part.material().rgb());
+        // model.material.metallic = part.material().metallic;
+        // model.material.roughness = part.material().roughness;
 
         let viewport = Viewport {
             x: (panel_width * frame_input.device_pixel_ratio) as i32,
@@ -112,7 +90,7 @@ pub async fn render(part: Component) {
         frame_input
             .screen()
             .clear(ClearState::color_and_depth(0.5, 0.5, 0.5, 1.0, 1.0))
-            .render(&camera, skybox.into_iter().chain(&model), &[&light])
+            .render(&camera, skybox.into_iter().chain(part.model()), &[&light])
             .write(|| gui.render());
 
         FrameOutput::default()
