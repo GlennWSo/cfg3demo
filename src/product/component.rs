@@ -87,7 +87,7 @@ impl Component {
             current_material: 0,
             materials: placeholder_materials(),
             optional: true,
-            opt_in: false,
+            opt_in: true,
             model: None,
         }
     }
@@ -118,7 +118,7 @@ impl Component {
         }
     }
 
-    pub fn model(&self) -> Option<&dyn Object> {
+    pub fn object(&self) -> Option<&dyn Object> {
         if self.opt_in {
             Some(self.model.as_ref().expect("model has not been initated"))
         } else {

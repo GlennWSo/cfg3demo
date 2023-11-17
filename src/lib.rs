@@ -10,7 +10,7 @@ use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen(start)]
 pub async fn start() -> Result<(), JsValue> {
-    use product::Component;
+    use product::Product;
 
     console_log::init_with_level(log::Level::Debug).unwrap();
 
@@ -27,12 +27,12 @@ pub async fn start() -> Result<(), JsValue> {
             info!("got resonse: {:#?}", v);
             error! {"Failed to parse api response"}; // TODO parse
             info!("falling back to dummy product");
-            Component::placeholder()
+            Product::placeholder()
         }
         Err(e) => {
             error!("failed to get part from database with err{}", e);
             info!("falling back to dummy product");
-            Component::placeholder()
+            Product::placeholder()
         }
     };
 

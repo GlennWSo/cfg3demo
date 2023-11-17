@@ -10,9 +10,9 @@ use three_d_asset::{degrees, vec3, PbrMaterial, Srgba, TriMesh, Viewport};
 
 use three_d::egui::{Color32, ProgressBar, Ui};
 
-use crate::product::Component;
+use crate::product::{Component, Product};
 
-pub async fn render(part: Component) {
+pub async fn render(mut product: Product) {
     let window = Window::new(WindowSettings {
         title: "Product Config".to_string(),
         ..Default::default()
@@ -50,8 +50,9 @@ pub async fn render(part: Component) {
     );
     let light = AmbientLight::new_with_environment(&context, 1.0, Srgba::WHITE, skybox.texture());
 
-    let mut part = Component::placeholder();
-    part.init(&context);
+    // let mut part = Component::placeholder();
+    // part.init(&context);
+    product.init(&context);
 
     let mut gui = three_d::GUI::new(&context);
 
@@ -67,12 +68,12 @@ pub async fn render(part: Component) {
                 SidePanel::left("side_panel").show(gui_context, |ui| {
                     ui.heading("Config Panel");
                     ui.add_space(30.0);
-                    part.add_controls(ui);
+                    product.add_controls(ui);
                 });
                 panel_width = gui_context.used_rect().width();
             },
         );
-        part.update();
+        product.update();
 
         let viewport = Viewport {
             x: (panel_width * frame_input.device_pixel_ratio) as i32,
@@ -84,7 +85,7 @@ pub async fn render(part: Component) {
         camera.set_viewport(viewport);
         control.handle_events(&mut camera, &mut frame_input.events);
 
-        let objects = skybox.into_iter().chain(part.model());
+        let objects = skybox.into_iter().chain(product.objects());
         frame_input
             .screen()
             .clear(ClearState::color_and_depth(0.5, 0.5, 0.5, 1.0, 1.0))
