@@ -1,14 +1,12 @@
 use log::warn;
 use std::{
     fmt::Display,
-    iter::Map,
-    option::{self, IntoIter},
 };
 use three_d::{
     egui::{Color32, InnerResponse, ProgressBar, Sense, Stroke, Ui},
-    Context, Geometry, Gm, Mesh, Object, PhysicalMaterial,
+    Context, Gm, Mesh, Object, PhysicalMaterial,
 };
-use three_d_asset::{PbrMaterial, Srgba, TriMesh};
+use three_d_asset::{PbrMaterial, TriMesh};
 
 pub struct Material {
     name: Box<str>,
@@ -107,7 +105,7 @@ impl Component {
         let rgb = self.material().rgb.into();
         let metallic = self.material().metallic;
         let roughness = self.material().roughness;
-        let mut model = self.model.as_mut();
+        let model = self.model.as_mut();
         match model {
             Some(model) => {
                 model.material.albedo = rgb;
