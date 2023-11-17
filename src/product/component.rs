@@ -5,7 +5,7 @@ use std::{
     option::{self, IntoIter},
 };
 use three_d::{
-    egui::{Color32, ProgressBar, Sense, Stroke, Ui},
+    egui::{Color32, InnerResponse, ProgressBar, Sense, Stroke, Ui},
     Context, Geometry, Gm, Mesh, Object, PhysicalMaterial,
 };
 use three_d_asset::{PbrMaterial, Srgba, TriMesh};
@@ -129,24 +129,38 @@ impl Component {
 
 impl Component {
     pub fn add_controls(&mut self, ui: &mut Ui) {
-        self.show_toggle(ui);
-        ui.add_enabled_ui(self.opt_in, |ui: &mut Ui| {
-            ui.group(|ui| {
-                self.material_picker(ui);
-                let (response, painter) = ui.allocate_painter([30., 30.].into(), Sense::hover());
-                let rounding = 0.;
-                let stroke: Stroke = (5.0, Color32::LIGHT_GRAY).into();
-                painter.rect(response.rect, rounding, self.material().color32(), stroke);
-                ui.horizontal(|ui| {
-                    ui.label("Metallic:");
-                    ui.add(ProgressBar::new(self.material().metallic))
-                });
-                ui.horizontal(|ui| {
-                    ui.label("Roughness:");
-                    ui.add(ProgressBar::new(self.material().roughness));
-                });
-            })
-        });
+        let options = (self.optional, self.materials.len());
+
+        match options {
+            (_, 0) => panic!("Componets must have atleast one material"),
+            (false, 1) => (), // self is not configurable
+            (true, 1) => self.show_toggle(ui),
+            (true, _) => {
+                self.show_toggle(ui);
+                ui.add_enabled_ui(self.opt_in, |ui| self.material_group(ui));
+            }
+            (false, _) => {
+                self.material_group(ui);
+            }
+        }
+    }
+
+    fn material_group(&mut self, ui: &mut Ui) -> InnerResponse<()> {
+        ui.group(|ui| {
+            self.material_picker(ui);
+            let (response, painter) = ui.allocate_painter([30., 30.].into(), Sense::hover());
+            let rounding = 0.;
+            let stroke: Stroke = (5.0, Color32::LIGHT_GRAY).into();
+            painter.rect(response.rect, rounding, self.material().color32(), stroke);
+            ui.horizontal(|ui| {
+                ui.label("Metallic:");
+                ui.add(ProgressBar::new(self.material().metallic))
+            });
+            ui.horizontal(|ui| {
+                ui.label("Roughness:");
+                ui.add(ProgressBar::new(self.material().roughness));
+            });
+        })
     }
     fn material_picker(&mut self, ui: &mut Ui) {
         for i in 0..self.materials.len() {

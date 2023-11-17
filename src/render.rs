@@ -67,7 +67,6 @@ pub async fn render(part: Component) {
                 SidePanel::left("side_panel").show(gui_context, |ui| {
                     ui.heading("Config Panel");
                     ui.add_space(30.0);
-                    // ui.horizontal();
                     part.add_controls(ui);
                 });
                 panel_width = gui_context.used_rect().width();
