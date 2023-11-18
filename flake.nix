@@ -15,7 +15,7 @@
           inherit system overlays;
         };
 
-        rust = pkgs.rust-bin.stable.latest.default.override{
+        rust = pkgs.rust-bin.nightly.latest.default.override{
           targets = ["wasm32-unknown-unknown"];
         };
         
@@ -30,7 +30,7 @@
         bacon = pkgs.bacon;
 
         web_run = pkgs.writeScriptBin "run" ./run.fish;
-        browse = pkgs.writeScriptBin "browse" "firefox --private-window http://127.0.0.1:8000/";
+        browse = pkgs.writeScriptBin "browse" "firefox http://127.0.0.1:8080/";
 
         
         bacon_script = pkgs.writeScriptBin "bac" ''
@@ -67,6 +67,7 @@
           trunk
           web_run
           browse
+          freecad
         ];
       in
       with pkgs;
