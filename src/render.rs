@@ -1,3 +1,4 @@
+use log::info;
 use three_d::{
     egui::SidePanel, AmbientLight, Camera, ClearState, FrameOutput, OrbitControl, Skybox, Window,
     WindowSettings,
@@ -29,8 +30,10 @@ pub async fn render(mut product: Product) {
     let mut loaded = if let Ok(loaded) =
         three_d_asset::io::load_async(&["../assets/chinese_garden_4k.hdr"]).await
     {
+        info!("loaded skybox from assets");
         loaded
     } else {
+        info!("loaded skybox from github");
         three_d_asset::io::load_async(&[
             "https://asny.github.io/three-d/assets/chinese_garden_4k.hdr",
         ])
