@@ -1,4 +1,4 @@
-use log::warn;
+use log::{info, warn};
 use std::fmt::Display;
 use three_d::{
     egui::{Color32, InnerResponse, ProgressBar, Sense, Stroke, Ui},
@@ -30,6 +30,42 @@ impl Component {
             opt_in: true,
             model: None,
         }
+    }
+
+    // assets/chair:
+    // fabrics.mtl
+    // fabrics.obj
+    // metal_arm.mtl
+    // metal_arm.obj
+    // plastic_arms.mtl
+    // plastic_arms.obj
+    // plastics.mtl
+    // plastics.obj
+    // skeleton.obj
+    pub async fn placeholder_chair() -> Box<[Self]> {
+        let asset_paths = [
+            "./chair/skeleton.obj",
+            "./chair/plastics.obj",
+            "./chair/fabrics.obj",
+            // "./chair/plastic_arms.obj",
+            // "./chair/skeleton.obj",
+        ];
+        let asset_names = ["frame", "platics", "fabrics"];
+        let mut loaded = if let Ok(loaded) = three_d_asset::io::load_async(&asset_paths).await {
+            info!("loaded skybox from assets");
+            loaded
+        } else {
+            panic!("failed to download the necessary assets, to enable running this example offline, place the relevant assets in a folder called 'assets' next to the three-d source")
+        };
+
+        asset_paths
+            .into_iter()
+            .zip(asset_names.into_iter())
+            .map(|(path, name)| {
+                let shape = loaded.deserialize(path).expect("failed to deserialize");
+                Self::new(name.into(), shape, Material::placeholder_materials(), false)
+            })
+            .collect()
     }
 
     pub fn placeholder1() -> Self {
@@ -137,13 +173,3 @@ impl Component {
         ui.checkbox(&mut self.opt_in, self.name.as_ref());
     }
 }
-
-// impl<'a> IntoIterator for &'a Component {
-//     type Item = &'a dyn Object;
-
-//     type IntoIter = IntoIter<Self::Item>;
-
-//     fn into_iter(self) -> Self::IntoIter {
-//         self.model.into_iter().map(|e| e.into())
-//     }
-// }

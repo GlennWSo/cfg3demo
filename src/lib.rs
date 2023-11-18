@@ -38,6 +38,6 @@ pub async fn start() -> Result<(), JsValue> {
 
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 
-    render::render(product).await;
+    render::render(product.await).await;
     Ok(())
 }

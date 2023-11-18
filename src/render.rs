@@ -3,7 +3,7 @@ use three_d::{
     egui::SidePanel, AmbientLight, Camera, ClearState, FrameOutput, OrbitControl, Skybox, Window,
     WindowSettings,
 };
-use three_d_asset::{degrees, vec3, Srgba, Viewport};
+use three_d_asset::{degrees, vec3, Srgba, TriMesh, Viewport};
 
 use crate::product::Product;
 
@@ -17,28 +17,25 @@ pub async fn render(mut product: Product) {
 
     let mut camera = Camera::new_perspective(
         window.viewport(),
-        vec3(-3.0, 1.0, 2.5),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, 1.0, 0.0),
+        vec3(0.0, 2410., 580.),
+        vec3(0.0, 410., 580.),
+        vec3(0.0, 0.0, 1.0),
         degrees(45.0),
         0.1,
-        1000.0,
+        10000.0,
     );
-    let mut control = OrbitControl::new(*camera.target(), 1.0, 100.0);
+    let mut control = OrbitControl::new(*camera.target(), 1.0, 10000.0);
 
-    // Source: https://polyhaven.com/
-    let mut loaded = if let Ok(loaded) =
-        three_d_asset::io::load_async(&["../assets/chinese_garden_4k.hdr"]).await
-    {
+    let asset_paths = [
+        "./chinese_garden_4k.hdr", // Source: https://polyhaven.com/
+                                   // "./chair/skeleton.obj",
+                                   // "./chair/skeleton.mtl",
+    ];
+    let mut loaded = if let Ok(loaded) = three_d_asset::io::load_async(&asset_paths).await {
         info!("loaded skybox from assets");
         loaded
     } else {
-        info!("loaded skybox from github");
-        three_d_asset::io::load_async(&[
-            "https://asny.github.io/three-d/assets/chinese_garden_4k.hdr",
-        ])
-        .await
-        .expect("failed to download the necessary assets, to enable running this example offline, place the relevant assets in a folder called 'assets' next to the three-d source")
+        panic!("failed to download the necessary assets, to enable running this example offline, place the relevant assets in a folder called 'assets' next to the three-d source")
     };
 
     let skybox = Skybox::new_from_equirectangular(

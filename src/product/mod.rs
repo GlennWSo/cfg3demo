@@ -23,8 +23,9 @@ impl<'a> Product {
         }
     }
 
-    pub fn placeholder() -> Self {
-        let parts = [Component::placeholder1(), Component::placeholder2()].into();
+    pub async fn placeholder() -> Self {
+        // let parts = [Component::placeholder1(), Component::placeholder2()].into();
+        let parts = Component::placeholder_chair().await;
         Self::new("Chair (tm)", parts)
     }
 
