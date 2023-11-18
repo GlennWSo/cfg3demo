@@ -12,11 +12,10 @@ crate-type = ["cdylib", "lib"]
 [dependencies]
 reqwest = "0.11.22"
 three-d = { version = "0.16.3", features = ["egui-gui"] }
-three-d-asset = { version = "0.6.0", features = ["hdr", "http"] }
+three-d-asset = { version = "0.6.0", features = ["hdr", "http", "obj"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
