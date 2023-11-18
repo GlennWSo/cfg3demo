@@ -6,51 +6,7 @@ use three_d::{
 };
 use three_d_asset::{PbrMaterial, Positions, TriMesh, Vector3};
 
-pub struct Material {
-    name: Box<str>,
-    rgb: [u8; 3],
-    metallic: f32,
-    roughness: f32,
-}
-
-impl Material {
-    fn new(name: &str, rgb: [u8; 3], metallic: f32, roughness: f32) -> Self {
-        Self {
-            name: name.into(),
-            rgb,
-            metallic,
-            roughness,
-        }
-    }
-    pub fn rgb(&self) -> [u8; 3] {
-        self.rgb
-    }
-    pub fn color32(&self) -> Color32 {
-        Color32::from_rgb(self.rgb[0], self.rgb[1], self.rgb[2])
-    }
-    pub fn pbr(&self) -> PbrMaterial {
-        PbrMaterial {
-            albedo: self.rgb.into(),
-            metallic: self.metallic,
-            roughness: self.roughness,
-            ..Default::default()
-        }
-    }
-}
-
-impl Display for Material {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.name)
-    }
-}
-
-fn placeholder_materials() -> Box<[Material]> {
-    [
-        Material::new("GreySteel", [132, 132, 132], 0.8, 0.3),
-        Material::new("Pink", [213, 114, 207], 0.3, 0.4),
-    ]
-    .into()
-}
+use super::material::Material;
 
 type PbrModel = Gm<Mesh, PhysicalMaterial>;
 
@@ -81,7 +37,7 @@ impl Component {
             name: "Sphere".into(),
             shape: TriMesh::sphere(32),
             current_material: 0,
-            materials: placeholder_materials(),
+            materials: Material::placeholder_materials(),
             optional: true,
             opt_in: true,
             model: None,
@@ -105,7 +61,12 @@ impl Component {
         };
 
         shape.positions = pos;
-        Self::new("Cube".into(), shape, placeholder_materials(), false)
+        Self::new(
+            "Cube".into(),
+            shape,
+            Material::placeholder_materials(),
+            false,
+        )
     }
     pub fn material(&self) -> &Material {
         &self.materials[self.current_material]
@@ -120,9 +81,9 @@ impl Component {
         self.model = Some(model);
     }
     pub fn update(&mut self) {
-        let rgb = self.material().rgb.into();
-        let metallic = self.material().metallic;
-        let roughness = self.material().roughness;
+        let rgb = self.material().rgb().into();
+        let metallic = self.material().metallic();
+        let roughness = self.material().roughness();
         let model = self.model.as_mut();
         match model {
             Some(model) => {
@@ -165,18 +126,6 @@ impl Component {
     fn material_group(&mut self, ui: &mut Ui) -> InnerResponse<()> {
         ui.group(|ui| {
             self.material_picker(ui);
-            // let (response, painter) = ui.allocate_painter([30., 30.].into(), Sense::hover());
-            // let rounding = 0.;
-            // let stroke: Stroke = (5.0, Color32::LIGHT_GRAY).into();
-            // painter.rect(response.rect, rounding, self.material().color32(), stroke);
-            // ui.horizontal(|ui| {
-            //     ui.label("Metallic:");
-            //     ui.add(ProgressBar::new(self.material().metallic))
-            // });
-            // ui.horizontal(|ui| {
-            //     ui.label("Roughness:");
-            //     ui.add(ProgressBar::new(self.material().roughness));
-            // });
         })
     }
     fn material_picker(&mut self, ui: &mut Ui) {

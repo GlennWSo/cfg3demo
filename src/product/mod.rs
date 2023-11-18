@@ -1,4 +1,5 @@
 mod component;
+mod material;
 
 pub use component::Component;
 use three_d::{egui::Ui, Context};
