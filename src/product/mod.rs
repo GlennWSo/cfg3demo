@@ -33,8 +33,8 @@ impl<'a> Product {
 
     pub fn add_controls(&mut self, ui: &mut Ui) {
         ui.heading(self.name.as_ref());
-        ui.add_space(10.0);
         for part in self.parts.iter_mut() {
+            ui.add_space(10.0);
             part.add_controls(ui)
         }
     }
