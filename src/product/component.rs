@@ -156,6 +156,7 @@ impl Component {
                 ui.add_enabled_ui(self.opt_in, |ui| self.material_group(ui));
             }
             (false, _) => {
+                ui.label(self.name.as_ref());
                 self.material_group(ui);
             }
         }
@@ -164,18 +165,18 @@ impl Component {
     fn material_group(&mut self, ui: &mut Ui) -> InnerResponse<()> {
         ui.group(|ui| {
             self.material_picker(ui);
-            let (response, painter) = ui.allocate_painter([30., 30.].into(), Sense::hover());
-            let rounding = 0.;
-            let stroke: Stroke = (5.0, Color32::LIGHT_GRAY).into();
-            painter.rect(response.rect, rounding, self.material().color32(), stroke);
-            ui.horizontal(|ui| {
-                ui.label("Metallic:");
-                ui.add(ProgressBar::new(self.material().metallic))
-            });
-            ui.horizontal(|ui| {
-                ui.label("Roughness:");
-                ui.add(ProgressBar::new(self.material().roughness));
-            });
+            // let (response, painter) = ui.allocate_painter([30., 30.].into(), Sense::hover());
+            // let rounding = 0.;
+            // let stroke: Stroke = (5.0, Color32::LIGHT_GRAY).into();
+            // painter.rect(response.rect, rounding, self.material().color32(), stroke);
+            // ui.horizontal(|ui| {
+            //     ui.label("Metallic:");
+            //     ui.add(ProgressBar::new(self.material().metallic))
+            // });
+            // ui.horizontal(|ui| {
+            //     ui.label("Roughness:");
+            //     ui.add(ProgressBar::new(self.material().roughness));
+            // });
         })
     }
     fn material_picker(&mut self, ui: &mut Ui) {
