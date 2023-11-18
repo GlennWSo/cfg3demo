@@ -77,7 +77,8 @@ pub async fn render(mut product: Product) {
         camera.set_viewport(viewport);
         control.handle_events(&mut camera, &mut frame_input.events);
 
-        let objects = skybox.into_iter().chain(product.objects());
+        // let objects = skybox.into_iter().chain(product.objects());
+        let objects = product.objects();
         frame_input
             .screen()
             .clear(ClearState::color_and_depth(0.5, 0.5, 0.5, 1.0, 1.0))
