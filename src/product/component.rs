@@ -32,35 +32,24 @@ impl Component {
         }
     }
 
-    // assets/chair:
-    // fabrics.mtl
-    // fabrics.obj
-    // metal_arm.mtl
-    // metal_arm.obj
-    // plastic_arms.mtl
-    // plastic_arms.obj
-    // plastics.mtl
-    // plastics.obj
-    // skeleton.obj
     pub async fn placeholder_chair() -> Box<[Self]> {
-        let asset_paths = [
-            "./chair/skeleton.obj",
-            "./chair/plastics.obj",
-            "./chair/fabrics.obj",
-            // "./chair/plastic_arms.obj",
-            // "./chair/skeleton.obj",
+        let asset_info = [
+            ("./chair/skeleton.obj", "Frame"),
+            ("./chair/plastics.obj", "Plastics"),
+            ("./chair/fabrics.obj", "Fabrics"), // "./chair/plastic_arms.obj",
+            ("./chair/plastic_arms.obj", "Arm Plastics"), // "./chair/skeleton.obj",
+            ("./chair/metal_arm.obj", "Arm Frame"),
         ];
-        let asset_names = ["frame", "platics", "fabrics"];
-        let mut loaded = if let Ok(loaded) = three_d_asset::io::load_async(&asset_paths).await {
+        let paths: Box<[&str]> = asset_info.iter().map(|row| row.0).collect();
+        let mut loaded = if let Ok(loaded) = three_d_asset::io::load_async(&paths).await {
             info!("loaded skybox from assets");
             loaded
         } else {
             panic!("failed to download the necessary assets, to enable running this example offline, place the relevant assets in a folder called 'assets' next to the three-d source")
         };
 
-        asset_paths
+        asset_info
             .into_iter()
-            .zip(asset_names.into_iter())
             .map(|(path, name)| {
                 let shape = loaded.deserialize(path).expect("failed to deserialize");
                 Self::new(name.into(), shape, Material::placeholder_materials(), false)
