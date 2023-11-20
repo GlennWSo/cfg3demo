@@ -10,6 +10,25 @@ pub struct Material {
     roughness: f32,
 }
 impl Material {
+    pub fn gold() -> Self {
+        Self::new("Gold".into(), [212, 175, 55], 1.0, 0.1)
+    }
+    pub fn silver() -> Self {
+        Self::new("Silver".into(), [192, 192, 192], 1.0, 0.1)
+    }
+    pub fn alu() -> Self {
+        Self::new("Aluminium".into(), [132, 135, 137], 0.7, 0.3)
+    }
+    pub fn black_plastic() -> Self {
+        Self::new("Black Plastic".into(), [34, 35, 39], 0.1, 0.4)
+    }
+    pub fn dark_fabric() -> Self {
+        Self::new("Dark Fabric".into(), [20, 39, 46], 0.3, 0.9)
+    }
+    pub fn pink_fabric() -> Self {
+        Self::new("Pink Fabric".into(), [255, 138, 201], 0.3, 0.9)
+    }
+
     fn new(name: &str, rgb: [u8; 3], metallic: f32, roughness: f32) -> Self {
         Self {
             name: name.into(),
@@ -31,6 +50,10 @@ impl Material {
             roughness: self.roughness,
             ..Default::default()
         }
+    }
+
+    pub fn placeholder_fabs() -> Box<[Material]> {
+        [Material::dark_fabric(), Material::pink_fabric()].into()
     }
     pub fn placeholder_materials() -> Box<[Material]> {
         [
