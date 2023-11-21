@@ -11,10 +11,10 @@ pub struct Material {
 }
 impl Material {
     pub fn gold() -> Self {
-        Self::new("Gold".into(), [212, 175, 55], 1.0, 0.1)
+        Self::new("Gold".into(), [212, 175, 55], 0.9, 0.2)
     }
     pub fn silver() -> Self {
-        Self::new("Silver".into(), [192, 192, 192], 1.0, 0.1)
+        Self::new("Silver".into(), [192, 192, 192], 0.9, 0.2)
     }
     pub fn alu() -> Self {
         Self::new("Aluminium".into(), [132, 135, 137], 0.7, 0.3)
@@ -54,6 +54,9 @@ impl Material {
 
     pub fn placeholder_fabs() -> Box<[Material]> {
         [Material::dark_fabric(), Material::pink_fabric()].into()
+    }
+    pub fn placeholder_metals() -> Box<[Material]> {
+        [Material::alu(), Material::gold(), Material::silver()].into()
     }
     pub fn placeholder_materials() -> Box<[Material]> {
         [

@@ -34,11 +34,36 @@ impl Component {
 
     pub async fn placeholder_chair() -> Box<[Self]> {
         let asset_info = [
-            ("./chair/skeleton.obj", "Frame"),
-            ("./chair/plastics.obj", "Plastics"),
-            ("./chair/fabrics.obj", "Fabrics"), // "./chair/plastic_arms.obj",
-            ("./chair/plastic_arms.obj", "Arm Plastics"), // "./chair/skeleton.obj",
-            ("./chair/metal_arm.obj", "Arm Frame"),
+            (
+                "./chair/skeleton.obj",
+                "Frame",
+                Material::placeholder_metals(),
+                false,
+            ),
+            (
+                "./chair/plastics.obj",
+                "Plastics",
+                [Material::black_plastic()].into(),
+                false,
+            ),
+            (
+                "./chair/fabrics.obj",
+                "Fabrics",
+                Material::placeholder_fabs(),
+                false,
+            ),
+            (
+                "./chair/plastic_arms.obj",
+                "Arm Plastics",
+                [Material::black_plastic()].into(),
+                true,
+            ),
+            (
+                "./chair/metal_arm.obj",
+                "Arm Frame",
+                Material::placeholder_metals(),
+                true,
+            ),
         ];
         let paths: Box<[&str]> = asset_info.iter().map(|row| row.0).collect();
         let mut loaded = if let Ok(loaded) = three_d_asset::io::load_async(&paths).await {
@@ -50,9 +75,9 @@ impl Component {
 
         asset_info
             .into_iter()
-            .map(|(path, name)| {
+            .map(|(path, name, materials, optional)| {
                 let shape = loaded.deserialize(path).expect("failed to deserialize");
-                Self::new(name.into(), shape, Material::placeholder_materials(), false)
+                Self::new(name.into(), shape, materials, optional)
             })
             .collect()
     }
