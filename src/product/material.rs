@@ -159,7 +159,7 @@ impl MaterialCollection {
     /// placholder fabrics
     pub fn fabrics() -> Self {
         let materials = [Material::pink_fabric(), Material::dark_fabric()].into();
-        Self::new("Metals".into(), materials)
+        Self::new("Fabrics".into(), materials)
     }
 }
 

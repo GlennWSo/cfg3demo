@@ -59,13 +59,13 @@ impl ConfigPart {
     }
 }
 
-pub struct AssyGraph {
+pub struct Assy {
     parts: Box<[ConfigPart]>,
     materials: Box<[SharedMaterial]>,
     includes: Box<[Include]>,
 }
 
-impl<'a> AssyGraph {
+impl<'a> Assy {
     pub fn new(parts: Box<[ConfigPart]>) -> Self {
         let mut materials = Vec::new();
         let mut includes = Vec::new();
@@ -104,7 +104,8 @@ impl<'a> AssyGraph {
         }
     }
     pub fn add_material_ui(&mut self, ui: &mut Ui) {
-        for material_choice in self.materials.iter_mut() {
+        for material_choice in self.materials.iter().filter(|m| m.borrow().len() > 1) {
+            ui.add_space(10.0);
             ui.label(material_choice.borrow().label().to_string());
             let n = material_choice.borrow().len();
             for i in 0..n {
@@ -131,7 +132,7 @@ impl<'a> AssyGraph {
     }
 }
 /// placeholders
-impl AssyGraph {
+impl Assy {
     pub async fn placeholder_chair() -> Self {
         let metals: SharedMaterial = MaterialCollection::metals().into();
         let fabs: SharedMaterial = MaterialCollection::fabrics().into();
