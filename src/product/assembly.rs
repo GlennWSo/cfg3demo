@@ -1,4 +1,8 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{
+    cell::RefCell,
+    ops::{Deref, DerefMut},
+    rc::Rc,
+};
 
 use log::warn;
 use three_d::{egui::Ui, Context, Gm, Mesh, Object, PhysicalMaterial};
@@ -85,7 +89,7 @@ impl MaterialCollection {
     fn len(&self) -> usize {
         self.options.len()
     }
-    fn into_shared(self) -> SharedMaterial {
+    fn into_shared(self) -> SharedMaterialInner {
         Rc::new(RefCell::new(self))
     }
 }
@@ -105,37 +109,37 @@ pub struct Assy {
     include_options: IncludeOptions,
 }
 
-type SharedMaterial = Rc<RefCell<MaterialCollection>>;
-// #[derive(PartialEq, Clone, Debug)]
-// struct SharedMaterial {
-//     material: Rc<RefCell<MaterialCollection>>,
-// }
+type SharedMaterialInner = Rc<RefCell<MaterialCollection>>;
+#[derive(PartialEq, Clone, Debug)]
+struct SharedMaterial {
+    material: SharedMaterialInner,
+}
 
-// impl<'a> SharedMaterial {
-//     pub fn new(label: Box<str>, materials: Box<[Material]>) -> Self {
-//         let collection = MaterialCollection::new(label, materials);
-//         let material = Rc::new(RefCell::new(collection));
-//         Self { material }
-//     }
-// }
-// impl From<MaterialCollection> for SharedMaterial {
-//     fn from(collection: MaterialCollection) -> Self {
-//         let material = Rc::new(RefCell::new(collection));
-//         Self { material }
-//     }
-// }
-// impl Deref for SharedMaterial {
-//     type Target = SharedMaterial;
-//     fn deref(&self) -> &Self::Target {
-//         &self.material
-//     }
-// }
+impl<'a> SharedMaterial {
+    pub fn new(label: Box<str>, materials: Box<[Material]>) -> Self {
+        let collection = MaterialCollection::new(label, materials);
+        let material = Rc::new(RefCell::new(collection));
+        Self { material }
+    }
+}
+impl From<MaterialCollection> for SharedMaterial {
+    fn from(collection: MaterialCollection) -> Self {
+        let material = Rc::new(RefCell::new(collection));
+        Self { material }
+    }
+}
+impl Deref for SharedMaterial {
+    type Target = SharedMaterialInner;
+    fn deref(&self) -> &Self::Target {
+        &self.material
+    }
+}
 
-// impl DerefMut for SharedMaterial {
-//     fn deref_mut(&mut self) -> &mut Self::Target {
-//         &mut self.material
-//     }
-// }
+impl DerefMut for SharedMaterial {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.material
+    }
+}
 
 type SharedInclude = Rc<RefCell<Include>>;
 pub struct GraphPart {
@@ -169,8 +173,8 @@ pub struct AssyGraph {
 
 impl AssyGraph {
     pub fn dummy() -> Self {
-        let metals =
-            MaterialCollection::new("metals".into(), Material::placeholder_metals()).into_shared();
+        let metals: SharedMaterial =
+            MaterialCollection::new("metals".into(), Material::placeholder_metals()).into();
         let parts = [
             GraphPart::new(
                 "sphere".into(),

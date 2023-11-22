@@ -18,13 +18,14 @@ pub async fn render(mut product: Product) {
     let mut camera = Camera::new_perspective(
         window.viewport(),
         vec3(0.0, 2410., 580.),
-        vec3(0.0, 410., 580.),
+        vec3(0.0, 0., 0.),
+        // vec3(0.0, 410., 580.),
         vec3(0.0, 0.0, 1.0),
         degrees(45.0),
-        0.1,
+        1.0,
         10000.0,
     );
-    let mut control = OrbitControl::new(*camera.target(), 1000.0, 5000.0);
+    let mut control = OrbitControl::new(*camera.target(), 1.0, 5000.0);
 
     let asset_paths = [
         "./chinese_garden_4k.hdr", // Source: https://polyhaven.com/
