@@ -1,10 +1,10 @@
 use log::{info, warn};
-use std::fmt::Display;
+
 use three_d::{
-    egui::{Color32, InnerResponse, ProgressBar, Sense, Stroke, Ui},
+    egui::{InnerResponse, Ui},
     Context, Gm, Mesh, Object, PhysicalMaterial,
 };
-use three_d_asset::{PbrMaterial, Positions, TriMesh, Vector3};
+use three_d_asset::{TriMesh};
 
 use super::{material::Material, shape::cube, PbrModel};
 

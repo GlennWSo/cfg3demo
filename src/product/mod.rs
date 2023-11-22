@@ -1,4 +1,5 @@
 mod assembly;
+mod component;
 mod material;
 mod part;
 mod shape;
@@ -41,7 +42,7 @@ impl<'a> Product {
     }
 
     pub async fn assy_dummy() -> Self {
-        let assy = Assy::dummy();
+        let assy = Assy::placeholder_chair().await;
         Self::new("Dummy", [].into(), [assy].into())
     }
 

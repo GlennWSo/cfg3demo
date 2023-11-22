@@ -3,7 +3,7 @@ use three_d::{
     egui::SidePanel, AmbientLight, Camera, ClearState, FrameOutput, OrbitControl, Skybox, Window,
     WindowSettings,
 };
-use three_d_asset::{degrees, vec3, Srgba, TriMesh, Viewport};
+use three_d_asset::{degrees, vec3, Srgba, Viewport};
 
 use crate::product::Product;
 
@@ -18,8 +18,8 @@ pub async fn render(mut product: Product) {
     let mut camera = Camera::new_perspective(
         window.viewport(),
         vec3(0.0, 2410., 580.),
-        vec3(0.0, 0., 0.),
-        // vec3(0.0, 410., 580.),
+        // vec3(0.0, 0., 0.),
+        vec3(0.0, 410., 580.),
         vec3(0.0, 0.0, 1.0),
         degrees(45.0),
         1.0,

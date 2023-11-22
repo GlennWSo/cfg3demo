@@ -1,5 +1,8 @@
+use std::cell::RefCell;
 use std::fmt::Display;
 use std::hash::Hash;
+use std::ops::{Deref, DerefMut, Index};
+use std::rc::Rc;
 
 use three_d::egui::Color32;
 use three_d_asset::PbrMaterial;
@@ -105,5 +108,94 @@ impl Material {
 impl Display for Material {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name)
+    }
+}
+type Materials = Box<[Material]>;
+
+#[derive(Debug, Clone, Hash, PartialEq)]
+pub struct MaterialCollection {
+    label: Box<str>,
+    options: Materials,
+    pub current_material: usize,
+}
+impl Index<usize> for MaterialCollection {
+    type Output = Material;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.options[index]
+    }
+}
+
+impl MaterialCollection {
+    pub fn new(label: Box<str>, options: Materials) -> Self {
+        Self {
+            options,
+            label,
+            current_material: 0,
+        }
+    }
+    pub fn current(&self) -> &Material {
+        &self.options[self.current_material]
+    }
+    pub fn label(&self) -> &str {
+        &self.label
+    }
+    pub fn options(&self) -> &[Material] {
+        &self.options
+    }
+
+    pub fn len(&self) -> usize {
+        self.options.len()
+    }
+}
+
+/// placholder collections
+impl MaterialCollection {
+    /// placholder metals
+    pub fn metals() -> Self {
+        let materials = [Material::alu(), Material::gold(), Material::silver()].into();
+        Self::new("Metals".into(), materials)
+    }
+    /// placholder fabrics
+    pub fn fabrics() -> Self {
+        let materials = [Material::pink_fabric(), Material::dark_fabric()].into();
+        Self::new("Metals".into(), materials)
+    }
+}
+
+pub type SharedMaterialInner = Rc<RefCell<MaterialCollection>>;
+#[derive(PartialEq, Clone, Debug)]
+pub struct SharedMaterial {
+    material: SharedMaterialInner,
+}
+
+impl SharedMaterial {
+    pub fn mono(material: Material) -> Self {
+        MaterialCollection::new(material.name.clone().into(), [material].into()).into()
+    }
+}
+
+impl From<Material> for SharedMaterial {
+    fn from(material: Material) -> Self {
+        Self::mono(material)
+    }
+}
+
+impl From<MaterialCollection> for SharedMaterial {
+    fn from(collection: MaterialCollection) -> Self {
+        let material = Rc::new(RefCell::new(collection));
+        Self { material }
+    }
+}
+impl Deref for SharedMaterial {
+    type Target = SharedMaterialInner;
+    fn deref(&self) -> &Self::Target {
+        &self.material
+    }
+}
+
+impl DerefMut for SharedMaterial {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.material
     }
 }
