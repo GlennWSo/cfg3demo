@@ -6,11 +6,9 @@ use three_d::{
 };
 use three_d_asset::{PbrMaterial, Positions, TriMesh, Vector3};
 
-use super::material::Material;
+use super::{material::Material, shape::cube, PbrModel};
 
-type PbrModel = Gm<Mesh, PhysicalMaterial>;
-
-pub struct Component {
+pub struct Part {
     name: Box<str>,
     shape: TriMesh,
     current_material: usize,
@@ -19,7 +17,7 @@ pub struct Component {
     opt_in: bool,
     model: Option<PbrModel>,
 }
-impl Component {
+impl Part {
     fn new(name: Box<str>, shape: TriMesh, materials: Box<[Material]>, optional: bool) -> Self {
         Self {
             name,
@@ -94,23 +92,7 @@ impl Component {
         }
     }
     pub fn placeholder2() -> Self {
-        let mut shape = TriMesh::cube();
-        let pos = match shape.positions {
-            Positions::F32(mut v) => Positions::F32({
-                for e in v.iter_mut() {
-                    e.y -= 2.;
-                }
-                v
-            }),
-            Positions::F64(mut v) => Positions::F64({
-                for e in v.iter_mut() {
-                    e.z -= 10.;
-                }
-                v
-            }),
-        };
-
-        shape.positions = pos;
+        let shape = cube(0.0, -2.0, 0.);
         Self::new(
             "Cube".into(),
             shape,
@@ -154,7 +136,7 @@ impl Component {
     }
 }
 
-impl Component {
+impl Part {
     pub fn add_controls(&mut self, ui: &mut Ui) {
         let options = (self.optional, self.materials.len());
 

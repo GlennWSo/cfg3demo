@@ -1,14 +1,42 @@
 use std::fmt::Display;
+use std::hash::Hash;
 
 use three_d::egui::Color32;
 use three_d_asset::PbrMaterial;
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct Material {
     name: Box<str>,
     rgb: [u8; 3],
     metallic: f32,
     roughness: f32,
 }
+impl Material {
+    fn not_nan(&self) -> bool {
+        if self.metallic.is_nan() {
+            return false;
+        };
+        if self.roughness.is_nan() {
+            return false;
+        };
+        true
+    }
+}
+
+impl Eq for Material {}
+
+impl Hash for Material {
+    /// #panics if Nan are pressent in self
+    /// TODO create reminder to update hash if Material data structure gets new fields
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        debug_assert!(self.not_nan(), "NaN is not allowed in material sets");
+        self.metallic.to_bits().hash(state);
+        self.roughness.to_bits().hash(state);
+        self.name.hash(state);
+        self.rgb.hash(state);
+    }
+}
+
 impl Material {
     pub fn gold() -> Self {
         Self::new("Gold".into(), [212, 175, 55], 0.9, 0.2)
