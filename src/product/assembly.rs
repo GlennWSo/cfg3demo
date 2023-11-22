@@ -1,13 +1,7 @@
-use std::{
-    borrow::BorrowMut,
-    cell::RefCell,
-    ops::{Deref, DerefMut},
-    rc::Rc,
-    sync::Arc,
-};
+use std::{cell::RefCell, rc::Rc};
 
-use log::{info, warn};
-use three_d::{egui::Ui, material, Context, Gm, Mesh, Object, PhysicalMaterial};
+use log::warn;
+use three_d::{egui::Ui, Context, Gm, Mesh, Object, PhysicalMaterial};
 use three_d_asset::TriMesh;
 
 use super::{material::Material, shape::cube, PbrModel};
@@ -90,9 +84,6 @@ impl MaterialCollection {
 
     fn len(&self) -> usize {
         self.options.len()
-    }
-    fn mut_index(&mut self) -> &mut usize {
-        &mut self.current_material
     }
     fn into_shared(self) -> SharedMaterial {
         Rc::new(RefCell::new(self))
