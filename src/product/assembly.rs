@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, rc::Rc};
 
 use three_d::{egui::Ui, Context};
 use three_d_asset::TriMesh;
@@ -9,9 +9,25 @@ use super::{
     shape::cube,
 };
 
+type SharedBool = Rc<RefCell<bool>>;
+
+#[derive(Clone, PartialEq, Eq)]
 pub enum Include {
     MustHave,
-    Optional { opt_in: bool },
+    Optional { opt_in: SharedBool },
+}
+impl Include {
+    fn optinal(value: bool) -> Self {
+        Include::Optional {
+            opt_in: Rc::new(RefCell::new(value)),
+        }
+    }
+    fn opt_in(&self) -> bool {
+        match self {
+            Include::MustHave => true,
+            Include::Optional { opt_in } => *opt_in.borrow(),
+        }
+    }
 }
 
 pub struct ConfigPart {
@@ -46,20 +62,25 @@ impl ConfigPart {
 pub struct AssyGraph {
     parts: Box<[ConfigPart]>,
     materials: Box<[SharedMaterial]>,
-    // includes: Box<[SharedInclude]>,
+    includes: Box<[Include]>,
 }
 
 impl<'a> AssyGraph {
     pub fn new(parts: Box<[ConfigPart]>) -> Self {
         let mut materials = Vec::new();
+        let mut includes = Vec::new();
         for p in parts.iter() {
             if !materials.contains(&p.material) {
                 materials.push(p.material.clone());
+            }
+            if !includes.contains(&p.include) {
+                includes.push(p.include.clone());
             }
         }
         Self {
             parts,
             materials: materials.into(),
+            includes: includes.into(),
         }
     }
 
@@ -69,9 +90,12 @@ impl<'a> AssyGraph {
         }
     }
     pub fn objects(&'a self) -> impl Iterator<Item = &'a (dyn three_d::Object + 'a)> {
-        self.parts.iter().filter_map(|part| match part.include {
-            Include::Optional { opt_in: false } => None,
-            _ => Some(part.component.object()),
+        self.parts.iter().filter_map(|part| {
+            if part.include.opt_in() {
+                Some(part.component.object())
+            } else {
+                None
+            }
         })
     }
     pub fn update(&mut self) {
@@ -98,7 +122,7 @@ impl<'a> AssyGraph {
             match &mut part.include {
                 Include::MustHave => continue,
                 Include::Optional { opt_in } => {
-                    ui.checkbox(opt_in, part.name.as_ref());
+                    ui.checkbox(&mut *opt_in.borrow_mut(), part.name.as_ref());
                 }
             }
         }
@@ -122,12 +146,13 @@ impl AssyGraph {
             fabs.clone(),
             fabs.clone(),
         ];
+        let optinal = Include::optinal(true);
         let includes = [
             Include::MustHave,
             Include::MustHave,
-            Include::Optional { opt_in: true },
+            optinal.clone(),
             Include::MustHave,
-            Include::Optional { opt_in: true },
+            optinal.clone(),
         ];
 
         let data = shapes
@@ -152,7 +177,7 @@ impl AssyGraph {
                 "cube".into(),
                 cube(0.0, -2.0, 0.0).into(),
                 metals.clone(),
-                Include::Optional { opt_in: true },
+                Include::optinal(true),
             ),
         ]
         .into();
