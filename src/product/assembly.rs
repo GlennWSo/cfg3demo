@@ -5,16 +5,16 @@ use three_d_asset::TriMesh;
 
 use super::{
     component::Component,
-    material::{self, Material, MaterialCollection, SharedMaterial},
+    material::{Material, MaterialCollection, SharedMaterial},
     shape::cube,
 };
 
-type SharedBool = Rc<RefCell<bool>>;
+type SharedToggle = Rc<RefCell<bool>>;
 
 #[derive(Clone, PartialEq, Eq)]
 pub enum Include {
     MustHave,
-    Optional { opt_in: SharedBool },
+    Optional { opt_in: SharedToggle },
 }
 impl Include {
     fn optinal(value: bool) -> Self {
@@ -118,13 +118,11 @@ impl<'a> AssyGraph {
         }
     }
     pub fn add_configure_ui(&mut self, ui: &mut Ui) {
-        for part in self.parts.iter_mut() {
-            match &mut part.include {
-                Include::MustHave => continue,
-                Include::Optional { opt_in } => {
-                    ui.checkbox(&mut *opt_in.borrow_mut(), part.name.as_ref());
-                }
-            }
+        for include in self.includes.iter().filter_map(|inc| match inc {
+            Include::MustHave => None,
+            Include::Optional { opt_in } => Some(opt_in),
+        }) {
+            ui.checkbox(&mut *include.borrow_mut(), "TODO: fix me");
         }
     }
     pub fn add_controls(&mut self, ui: &mut Ui) {
@@ -164,6 +162,7 @@ impl AssyGraph {
 
         Self::new(data)
     }
+    #[allow(dead_code)]
     pub fn dummy() -> Self {
         let metals: SharedMaterial = MaterialCollection::metals().into();
         let parts = [
