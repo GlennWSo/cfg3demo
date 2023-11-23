@@ -4,27 +4,31 @@ use three_d::{
     egui::{InnerResponse, Ui},
     Context, Gm, Mesh, Object, PhysicalMaterial,
 };
-use three_d_asset::{TriMesh};
+use three_d_asset::TriMesh;
 
-use super::{material::Material, shape::cube, PbrModel};
+use super::{
+    material::{Material, MaterialCollection},
+    shape::cube,
+    PbrModel,
+};
 
 pub struct Part {
     name: Box<str>,
     shape: TriMesh,
-    current_material: usize,
-    materials: Box<[Material]>,
+    // current_material: usize,
+    // materials: Box<[Material]>,
+    material: MaterialCollection,
     optional: bool,
     opt_in: bool,
     model: Option<PbrModel>,
 }
 impl Part {
-    fn new(name: Box<str>, shape: TriMesh, materials: Box<[Material]>, optional: bool) -> Self {
+    fn new(name: Box<str>, shape: TriMesh, material: MaterialCollection, optional: bool) -> Self {
         Self {
             name,
             shape,
-            materials,
+            material,
             optional,
-            current_material: 0,
             opt_in: true,
             model: None,
         }
@@ -35,31 +39,31 @@ impl Part {
             (
                 "./chair/skeleton.obj",
                 "Frame",
-                Material::placeholder_metals(),
+                MaterialCollection::metals(),
                 false,
             ),
             (
                 "./chair/plastics.obj",
                 "Plastics",
-                [Material::black_plastic()].into(),
+                Material::black_plastic().into(),
                 false,
             ),
             (
                 "./chair/fabrics.obj",
                 "Fabrics",
-                Material::placeholder_fabs(),
+                MaterialCollection::fabrics(),
                 false,
             ),
             (
                 "./chair/plastic_arms.obj",
                 "Arm Plastics",
-                [Material::black_plastic()].into(),
+                Material::black_plastic().into(),
                 true,
             ),
             (
                 "./chair/metal_arm.obj",
                 "Arm Frame",
-                Material::placeholder_metals(),
+                MaterialCollection::metals(),
                 true,
             ),
         ];
@@ -84,8 +88,7 @@ impl Part {
         Self {
             name: "Sphere".into(),
             shape: TriMesh::sphere(32),
-            current_material: 0,
-            materials: Material::placeholder_materials(),
+            material: MaterialCollection::metals(),
             optional: true,
             opt_in: true,
             model: None,
@@ -93,15 +96,10 @@ impl Part {
     }
     pub fn placeholder2() -> Self {
         let shape = cube(0.0, -2.0, 0.);
-        Self::new(
-            "Cube".into(),
-            shape,
-            Material::placeholder_materials(),
-            false,
-        )
+        Self::new("Cube".into(), shape, MaterialCollection::metals(), false)
     }
     pub fn material(&self) -> &Material {
-        &self.materials[self.current_material]
+        &self.material.current()
     }
     pub fn shape(&self) -> &TriMesh {
         &self.shape
@@ -138,7 +136,7 @@ impl Part {
 
 impl Part {
     pub fn add_controls(&mut self, ui: &mut Ui) {
-        let options = (self.optional, self.materials.len());
+        let options = (self.optional, self.material.len());
 
         match options {
             (_, 0) => panic!("Componets must have atleast one material"),
@@ -161,8 +159,9 @@ impl Part {
         })
     }
     fn material_picker(&mut self, ui: &mut Ui) {
-        for i in 0..self.materials.len() {
-            ui.radio_value(&mut self.current_material, i, self.materials[i].to_string());
+        for i in 0..self.material.len() {
+            let text = self.material.options()[i].to_string();
+            ui.radio_value(&mut self.material.current_material, i, text);
         }
     }
     fn show_toggle(&mut self, ui: &mut Ui) {

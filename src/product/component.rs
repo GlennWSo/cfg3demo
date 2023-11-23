@@ -1,17 +1,25 @@
 use log::{info, warn};
 use three_d::{Context, Gm, Mesh, Object, PhysicalMaterial};
-use three_d_asset::TriMesh;
+use three_d_asset::{AxisAlignedBoundingBox as AABB, TriMesh, Vector3};
 
 use super::{material::Material, PbrModel};
 
-pub struct Component {
+pub struct Body {
     shape: TriMesh,
     model: Option<PbrModel>,
 }
 
-impl Component {
+impl Body {
     fn new(shape: TriMesh) -> Self {
         Self { shape, model: None }
+    }
+
+    pub fn bounding_box(&self) -> AABB {
+        self.shape.compute_aabb()
+    }
+
+    pub fn bb_center(&self) -> Vector3<f32> {
+        self.shape.compute_aabb().center()
     }
 
     /// #panics
@@ -40,13 +48,13 @@ impl Component {
     }
 }
 
-impl From<TriMesh> for Component {
+impl From<TriMesh> for Body {
     fn from(shape: TriMesh) -> Self {
         Self::new(shape)
     }
 }
 
-impl Component {
+impl Body {
     pub async fn placeholder_chair() -> Vec<(&'static str, Self)> {
         let info = [
             ("Platic Parts", "./chair/plastics.obj"),

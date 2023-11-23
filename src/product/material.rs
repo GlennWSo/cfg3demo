@@ -3,6 +3,7 @@ use std::fmt::Display;
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut, Index};
 use std::rc::Rc;
+use std::sync::atomic::AtomicPtr;
 
 use three_d::egui::Color32;
 use three_d_asset::PbrMaterial;
@@ -41,6 +42,54 @@ impl Hash for Material {
 }
 
 impl Material {
+    fn new(name: &str, rgb: [u8; 3], metallic: f32, roughness: f32) -> Self {
+        Self {
+            name: name.into(),
+            rgb,
+            metallic,
+            roughness,
+        }
+    }
+    pub fn rgb(&self) -> [u8; 3] {
+        self.rgb
+    }
+    #[allow(dead_code)]
+    pub fn color32(&self) -> Color32 {
+        Color32::from_rgb(self.rgb[0], self.rgb[1], self.rgb[2])
+    }
+    pub fn pbr(&self) -> PbrMaterial {
+        PbrMaterial {
+            albedo: self.rgb.into(),
+            metallic: self.metallic,
+            roughness: self.roughness,
+            ..Default::default()
+        }
+    }
+
+    // pub fn placeholder_fabs() -> Box<[Material]> {
+    //     [Material::dark_fabric(), Material::pink_fabric()].into()
+    // }
+    // pub fn placeholder_metals() -> Box<[Material]> {
+    //     [Material::alu(), Material::gold(), Material::silver()].into()
+    // }
+    // pub fn placeholder_materials() -> Box<[Material]> {
+    //     [
+    //         Material::new("GreySteel", [132, 132, 132], 0.8, 0.3),
+    //         Material::new("Pink", [213, 114, 207], 0.3, 0.4),
+    //     ]
+    //     .into()
+    // }
+
+    pub fn metallic(&self) -> f32 {
+        self.metallic
+    }
+
+    pub(crate) fn roughness(&self) -> f32 {
+        self.roughness
+    }
+}
+
+impl Material {
     pub fn gold() -> Self {
         Self::new("Gold".into(), [212, 175, 55], 0.9, 0.2)
     }
@@ -59,52 +108,8 @@ impl Material {
     pub fn pink_fabric() -> Self {
         Self::new("Pink Fabric".into(), [255, 138, 201], 0.3, 0.9)
     }
-
-    fn new(name: &str, rgb: [u8; 3], metallic: f32, roughness: f32) -> Self {
-        Self {
-            name: name.into(),
-            rgb,
-            metallic,
-            roughness,
-        }
-    }
-    pub fn rgb(&self) -> [u8; 3] {
-        self.rgb
-    }
-    pub fn color32(&self) -> Color32 {
-        Color32::from_rgb(self.rgb[0], self.rgb[1], self.rgb[2])
-    }
-    pub fn pbr(&self) -> PbrMaterial {
-        PbrMaterial {
-            albedo: self.rgb.into(),
-            metallic: self.metallic,
-            roughness: self.roughness,
-            ..Default::default()
-        }
-    }
-
-    pub fn placeholder_fabs() -> Box<[Material]> {
-        [Material::dark_fabric(), Material::pink_fabric()].into()
-    }
-    pub fn placeholder_metals() -> Box<[Material]> {
-        [Material::alu(), Material::gold(), Material::silver()].into()
-    }
-    pub fn placeholder_materials() -> Box<[Material]> {
-        [
-            Material::new("GreySteel", [132, 132, 132], 0.8, 0.3),
-            Material::new("Pink", [213, 114, 207], 0.3, 0.4),
-        ]
-        .into()
-    }
-
-    pub fn metallic(&self) -> f32 {
-        self.metallic
-    }
-
-    pub(crate) fn roughness(&self) -> f32 {
-        self.roughness
-    }
 }
+
 impl Display for Material {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name)
@@ -134,6 +139,11 @@ impl MaterialCollection {
             current_material: 0,
         }
     }
+
+    pub fn mono(material: Material) -> Self {
+        MaterialCollection::new(material.name.clone().into(), [material].into())
+    }
+
     pub fn current(&self) -> &Material {
         &self.options[self.current_material]
     }
@@ -146,6 +156,12 @@ impl MaterialCollection {
 
     pub fn len(&self) -> usize {
         self.options.len()
+    }
+}
+
+impl From<Material> for MaterialCollection {
+    fn from(mat: Material) -> Self {
+        Self::mono(mat)
     }
 }
 

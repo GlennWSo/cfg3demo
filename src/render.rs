@@ -5,7 +5,7 @@ use three_d::{
 };
 use three_d_asset::{degrees, vec3, Srgba, Viewport};
 
-use crate::product::Product;
+use crate::product::{self, Product};
 
 pub async fn render(mut product: Product) {
     let window = Window::new(WindowSettings {
@@ -14,18 +14,6 @@ pub async fn render(mut product: Product) {
     })
     .unwrap();
     let context = window.gl();
-
-    let mut camera = Camera::new_perspective(
-        window.viewport(),
-        vec3(0.0, 2410., 580.),
-        // vec3(0.0, 0., 0.),
-        vec3(0.0, 410., 580.),
-        vec3(0.0, 0.0, 1.0),
-        degrees(45.0),
-        1.0,
-        10000.0,
-    );
-    let mut control = OrbitControl::new(*camera.target(), 1.0, 5000.0);
 
     let asset_paths = [
         "./chinese_garden_4k.hdr", // Source: https://polyhaven.com/
@@ -49,6 +37,16 @@ pub async fn render(mut product: Product) {
     // part.init(&context);
     product.init(&context);
 
+    let mut camera = Camera::new_perspective(
+        window.viewport(),
+        vec3(0.0, 2410., 580.),
+        product.bbox().center(),
+        vec3(0.0, 0.0, 1.0),
+        degrees(45.0),
+        1.0,
+        10000.0,
+    );
+    let mut control = OrbitControl::new(*camera.target(), 1.0, 5000.0);
     let mut gui = three_d::GUI::new(&context);
 
     // main loop

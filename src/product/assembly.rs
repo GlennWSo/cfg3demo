@@ -1,10 +1,10 @@
 use std::{cell::RefCell, rc::Rc};
 
 use three_d::{egui::Ui, Context};
-use three_d_asset::TriMesh;
+use three_d_asset::{AxisAlignedBoundingBox as AABB, TriMesh, Vector3};
 
 use super::{
-    component::Component,
+    component::Body,
     material::{Material, MaterialCollection, SharedMaterial},
     shape::cube,
 };
@@ -31,13 +31,14 @@ impl Include {
 }
 
 pub struct ConfigPart {
+    #[allow(dead_code)]
     name: Box<str>,
-    component: Component,
+    body: Body,
     material: SharedMaterial,
     include: Include,
 }
-impl From<(&str, Component, SharedMaterial, Include)> for ConfigPart {
-    fn from(value: (&str, Component, SharedMaterial, Include)) -> Self {
+impl From<(&str, Body, SharedMaterial, Include)> for ConfigPart {
+    fn from(value: (&str, Body, SharedMaterial, Include)) -> Self {
         let (name, component, material, include) = value;
         Self::new(name.into(), component, material, include)
     }
@@ -46,13 +47,13 @@ impl From<(&str, Component, SharedMaterial, Include)> for ConfigPart {
 impl ConfigPart {
     pub fn new(
         name: Box<str>,
-        component: Component,
+        component: Body,
         material: SharedMaterial,
         include: Include,
     ) -> Self {
         Self {
             name,
-            component,
+            body: component,
             material,
             include,
         }
@@ -67,6 +68,7 @@ pub struct Assy {
 
 impl<'a> Assy {
     pub fn new(parts: Box<[ConfigPart]>) -> Self {
+        assert!(parts.len() > 0, "Assy must have atleast one part");
         let mut materials = Vec::new();
         let mut includes = Vec::new();
         for p in parts.iter() {
@@ -84,15 +86,32 @@ impl<'a> Assy {
         }
     }
 
+    pub fn len(&self) -> usize {
+        self.parts.len()
+    }
+
+    pub fn bbox(&self) -> AABB {
+        let mut bb = self.parts[0].body.bounding_box();
+        if self.len() == 1 {
+            bb
+        } else {
+            let boxes = self.parts.iter().map(|p| p.body.bounding_box());
+            for other_box in boxes {
+                bb.expand_with_aabb(&other_box);
+            }
+            bb
+        }
+    }
+
     pub fn init(&mut self, ctx: &Context) {
         for p in self.parts.iter_mut() {
-            p.component.init(ctx, p.material.borrow().current())
+            p.body.init(ctx, p.material.borrow().current())
         }
     }
     pub fn objects(&'a self) -> impl Iterator<Item = &'a (dyn three_d::Object + 'a)> {
         self.parts.iter().filter_map(|part| {
             if part.include.opt_in() {
-                Some(part.component.object())
+                Some(part.body.object())
             } else {
                 None
             }
@@ -100,7 +119,7 @@ impl<'a> Assy {
     }
     pub fn update(&mut self) {
         for part in self.parts.iter_mut() {
-            part.component.update(part.material.borrow().current());
+            part.body.update(part.material.borrow().current());
         }
     }
     pub fn add_material_ui(&mut self, ui: &mut Ui) {
@@ -137,7 +156,7 @@ impl Assy {
         let metals: SharedMaterial = MaterialCollection::metals().into();
         let fabs: SharedMaterial = MaterialCollection::fabrics().into();
         let plastic: SharedMaterial = Material::black_plastic().into();
-        let shapes = Component::placeholder_chair().await;
+        let shapes = Body::placeholder_chair().await;
         let materials = [
             plastic,
             metals.clone(),

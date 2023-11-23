@@ -1,13 +1,13 @@
 mod assembly;
 mod component;
-mod material;
+pub mod material;
 mod part;
 mod shape;
 
 pub use part::Part;
-use three_d::{egui::Ui, Context, Gm, Mesh, PhysicalMaterial};
+use three_d::{egui::Ui, AxisAlignedBoundingBox as AABB, Context, Gm, Mesh, PhysicalMaterial};
 
-use assembly::AssyGraph as Assy;
+use assembly::Assy;
 
 pub type PbrModel = Gm<Mesh, PhysicalMaterial>;
 
@@ -35,6 +35,7 @@ impl<'a> Product {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn placeholder() -> Self {
         // let parts = [Component::placeholder1(), Component::placeholder2()].into();
         let parts = Part::placeholder_chair().await;
@@ -69,6 +70,47 @@ impl<'a> Product {
         }
         for assy in self.assys.iter_mut() {
             assy.update();
+        }
+    }
+
+    fn parts_bb(&self) -> Option<AABB> {
+        let len = self.parts.len();
+        if len == 0 {
+            return None;
+        }
+        let mut bb = self.parts[0].shape().compute_aabb();
+        if len == 1 {
+            return Some(bb);
+        }
+        for other_bb in self.parts[1..].iter().map(|p| p.shape().compute_aabb()) {
+            bb.expand_with_aabb(&other_bb);
+        }
+        Some(bb)
+    }
+    fn assys_bb(&self) -> Option<AABB> {
+        let len = self.assys.len();
+        if len == 0 {
+            return None;
+        }
+        let mut bb = self.assys[0].bbox();
+        if len == 1 {
+            return Some(bb);
+        }
+        for other_bb in self.assys[1..].iter().map(|a| a.bbox()) {
+            bb.expand_with_aabb(&other_bb);
+        }
+        Some(bb)
+    }
+    pub fn bbox(&self) -> AABB {
+        let bb1 = self.parts_bb();
+        let bb2 = self.assys_bb();
+        match (bb1, bb2) {
+            (None, None) => panic!("product has no parts nor assemblies"),
+            (None, Some(bb)) | (Some(bb), None) => bb,
+            (Some(mut bb), Some(bb2)) => {
+                bb.expand_with_aabb(&bb2);
+                bb
+            }
         }
     }
 }
