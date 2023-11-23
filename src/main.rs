@@ -2,7 +2,9 @@
 #[cfg(not(target_arch = "wasm32"))]
 #[tokio::main]
 async fn main() {
-    run().await;
+    use cfg3demo::{product::Product, render};
+    let product = Product::assy_dummy();
+    render::render(product.await).await;
 }
 
 #[cfg(target_arch = "wasm32")]

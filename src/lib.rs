@@ -1,5 +1,5 @@
-mod product;
-mod render;
+pub mod product;
+pub mod render;
 
 use log::{error, info};
 
@@ -22,17 +22,18 @@ pub async fn start() -> Result<(), JsValue> {
         .send()
         .await;
 
+    let fallback = Product::assy_dummy;
     let product = match res {
         Ok(v) => {
             info!("got resonse: {:#?}", v);
             error! {"Failed to parse api response"}; // TODO parse
             info!("falling back to dummy product");
-            Product::placeholder()
+            fallback()
         }
         Err(e) => {
             error!("failed to get part from database with err{}", e);
             info!("falling back to dummy product");
-            Product::placeholder()
+            fallback()
         }
     };
 
