@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, ops::Deref, rc::Rc};
 
 use three_d::{egui::Ui, Context};
 use three_d_asset::{AxisAlignedBoundingBox as AABB, TriMesh, Vector3};
@@ -14,18 +14,28 @@ type SharedToggle = Rc<RefCell<bool>>;
 #[derive(Clone, PartialEq, Eq)]
 pub enum Include {
     MustHave,
-    Optional { opt_in: SharedToggle },
+    Optional {
+        label: Box<str>,
+        opt_in: SharedToggle,
+    },
 }
 impl Include {
-    fn optinal(value: bool) -> Self {
+    fn optinal(name: impl Into<Box<str>>, value: bool) -> Self {
         Include::Optional {
+            label: name.into(),
             opt_in: Rc::new(RefCell::new(value)),
         }
     }
-    fn opt_in(&self) -> bool {
+    fn get_toggle(&self) -> Option<(&str, &SharedToggle)> {
         match self {
-            Include::MustHave => true,
-            Include::Optional { opt_in } => *opt_in.borrow(),
+            Include::Optional { label, opt_in } => Some((label, opt_in)),
+            _ => None,
+        }
+    }
+    fn is_show(&self) -> bool {
+        match self {
+            Include::Optional { opt_in, .. } => *opt_in.borrow(),
+            _ => true,
         }
     }
 }
@@ -110,7 +120,7 @@ impl<'a> Assy {
     }
     pub fn objects(&'a self) -> impl Iterator<Item = &'a (dyn three_d::Object + 'a)> {
         self.parts.iter().filter_map(|part| {
-            if part.include.opt_in() {
+            if part.include.is_show() {
                 Some(part.body.object())
             } else {
                 None
@@ -138,11 +148,8 @@ impl<'a> Assy {
         }
     }
     pub fn add_configure_ui(&mut self, ui: &mut Ui) {
-        for include in self.includes.iter().filter_map(|inc| match inc {
-            Include::MustHave => None,
-            Include::Optional { opt_in } => Some(opt_in),
-        }) {
-            ui.checkbox(&mut *include.borrow_mut(), "TODO: fix me");
+        for (name, toggle) in self.includes.iter().filter_map(|inc| inc.get_toggle()) {
+            ui.checkbox(&mut toggle.borrow_mut(), name);
         }
     }
     pub fn add_controls(&mut self, ui: &mut Ui) {
@@ -164,13 +171,13 @@ impl Assy {
             fabs.clone(),
             fabs.clone(),
         ];
-        let optinal = Include::optinal(true);
+        let arm_option = Include::optinal("Arms", true);
         let includes = [
             Include::MustHave,
             Include::MustHave,
-            optinal.clone(),
+            arm_option.clone(),
             Include::MustHave,
-            optinal.clone(),
+            arm_option,
         ];
 
         let data = shapes
@@ -196,7 +203,7 @@ impl Assy {
                 "cube".into(),
                 cube(0.0, -2.0, 0.0).into(),
                 metals.clone(),
-                Include::optinal(true),
+                Include::optinal("Cube", true),
             ),
         ]
         .into();
