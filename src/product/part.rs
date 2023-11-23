@@ -37,42 +37,55 @@ impl Part {
     pub async fn placeholder_chair() -> Box<[Self]> {
         let asset_info = [
             (
-                "./chair/skeleton.obj",
+                "chair/skeleton.obj",
                 "Frame",
                 MaterialCollection::metals(),
                 false,
             ),
             (
-                "./chair/plastics.obj",
+                "chair/plastics.obj",
                 "Plastics",
                 Material::black_plastic().into(),
                 false,
             ),
             (
-                "./chair/fabrics.obj",
+                "chair/fabrics.obj",
                 "Fabrics",
                 MaterialCollection::fabrics(),
                 false,
             ),
             (
-                "./chair/plastic_arms.obj",
+                "chair/plastic_arms.obj",
                 "Arm Plastics",
                 Material::black_plastic().into(),
                 true,
             ),
             (
-                "./chair/metal_arm.obj",
+                "chair/metal_arm.obj",
                 "Arm Frame",
                 MaterialCollection::metals(),
                 true,
             ),
         ];
+
+        #[cfg(target_arch = "wasm32")]
         let paths: Box<[&str]> = asset_info.iter().map(|row| row.0).collect();
-        let mut loaded = if let Ok(loaded) = three_d_asset::io::load_async(&paths).await {
-            info!("loaded skybox from assets");
-            loaded
-        } else {
-            panic!("failed to download the necessary assets, to enable running this example offline, place the relevant assets in a folder called 'assets' next to the three-d source")
+        #[cfg(not(target_arch = "wasm32"))]
+        let paths: Box<[String]> = asset_info
+            .iter()
+            .map(|row| format!("./assets/{}", row.0))
+            .collect();
+
+        let mut loaded = match three_d_asset::io::load_async(&paths).await {
+            Ok(loaded) => {
+                info!("loaded skybox from assets");
+                loaded
+            }
+            Err(e) => {
+                // log::error!("error: {}", e);
+                println!("error: {}", e);
+                panic!("failed to download the necessary assets, to enable running this example offline, place the relevant assets in a folder called 'assets' next to the three-d source")
+            }
         };
 
         asset_info

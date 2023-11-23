@@ -57,13 +57,18 @@ impl From<TriMesh> for Body {
 impl Body {
     pub async fn placeholder_chair() -> Vec<(&'static str, Self)> {
         let info = [
-            ("Platic Parts", "./chair/plastics.obj"),
-            ("Base Frame", "./chair/skeleton.obj"),
-            ("Arm Frame", "./chair/metal_arm.obj"),
-            ("Fabrics", "./chair/fabrics.obj"),
-            ("Arm Fabrics", "./chair/plastic_arms.obj"),
+            ("Platic Parts", "chair/plastics.obj"),
+            ("Base Frame", "chair/skeleton.obj"),
+            ("Arm Frame", "chair/metal_arm.obj"),
+            ("Fabrics", "chair/fabrics.obj"),
+            ("Arm Fabrics", "chair/plastic_arms.obj"),
         ];
         let paths: Vec<_> = info.iter().map(|row| row.1).collect();
+        #[cfg(not(target_arch = "wasm32"))]
+        let paths: Vec<_> = paths
+            .into_iter()
+            .map(|p| format!("./assets/{}", p))
+            .collect();
         let mut loaded = if let Ok(loaded) = three_d_asset::io::load_async(&paths).await {
             info!("loaded skybox from assets");
             loaded

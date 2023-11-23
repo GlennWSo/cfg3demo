@@ -1,5 +1,5 @@
-mod product;
-mod render;
+pub mod product;
+pub mod render;
 
 use log::{error, info};
 

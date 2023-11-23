@@ -16,12 +16,13 @@ pub async fn render(mut product: Product) {
     let context = window.gl();
 
     let asset_paths = [
-        "./chinese_garden_4k.hdr", // Source: https://polyhaven.com/
-                                   // "./chair/skeleton.obj",
-                                   // "./chair/skeleton.mtl",
+        "chinese_garden_4k.hdr", // Source: https://polyhaven.com/
     ];
+    #[cfg(not(target_arch = "wasm32"))]
+    let asset_paths = asset_paths.map(|p| format!("./assets/{}", p));
+
     let mut loaded = if let Ok(loaded) = three_d_asset::io::load_async(&asset_paths).await {
-        info!("loaded skybox from assets");
+        info!("loaded skybox from assets :)");
         loaded
     } else {
         panic!("failed to download the necessary assets, to enable running this example offline, place the relevant assets in a folder called 'assets' next to the three-d source")
