@@ -148,6 +148,7 @@ impl<'a> Assy {
         }
     }
     pub fn add_configure_ui(&mut self, ui: &mut Ui) {
+        ui.add_space(10.);
         for (name, toggle) in self.includes.iter().filter_map(|inc| inc.get_toggle()) {
             ui.checkbox(&mut toggle.borrow_mut(), name);
         }
