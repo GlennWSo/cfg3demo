@@ -8,4 +8,4 @@ dist/
 
 # Added by cargo
 /target
-CAD/
+CAD/*.FCBak

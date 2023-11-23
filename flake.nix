@@ -53,6 +53,7 @@
           # nodejs_20
           wasm-pack
           wasm-bindgen-cli
+          git-lfs
         ];
 
         utils = with pkgs; [
