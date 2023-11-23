@@ -16,7 +16,7 @@ pub async fn render(mut product: Product) {
     let context = window.gl();
 
     let asset_paths = [
-        "chinese_garden_4k.hdr", // Source: https://polyhaven.com/
+        "brown_photostudio_02_2k.hdr", // Source: https://polyhaven.com/
     ];
     #[cfg(not(target_arch = "wasm32"))]
     let asset_paths = asset_paths.map(|p| format!("./assets/{}", p));
@@ -28,9 +28,9 @@ pub async fn render(mut product: Product) {
         panic!("failed to download the necessary assets, to enable running this example offline, place the relevant assets in a folder called 'assets' next to the three-d source")
     };
 
-    let skybox = Skybox::new_from_equirectangular(
+    let skybox = &mut Skybox::new_from_equirectangular(
         &context,
-        &loaded.deserialize("chinese_garden_4k").unwrap(),
+        &loaded.deserialize("brown_photostudio_02_2k").unwrap(),
     );
     let light = AmbientLight::new_with_environment(&context, 1.0, Srgba::WHITE, skybox.texture());
 
